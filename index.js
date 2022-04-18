@@ -25,6 +25,17 @@ for (const file of commandFiles) {
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`)
+  knex.schema.hasTable('avatar').then(function (exists) {
+    if (!exists) {
+      knex.schema.createTable('avatar', function (t) {
+        t.increments('id').primary()
+        t.string('user_id')
+        t.string('url')
+        t.string('type')
+        t.timestamp('changed_at').defaultTo(knex.fn.now())
+      })
+    }
+  })
 })
 
 client.on('interactionCreate', async (interaction) => {
@@ -79,6 +90,8 @@ client.on('userUpdate', async (oldUser, newUser) => {
   await newUser.fetch()
 
   const newBanner = newUser.bannerURL({ dynamic: true })
+
+  const tableExsists = await knex.schema.hasTable('avatar')
 
   const oldBannerEntry = await knex('avatar')
     .select('url')
