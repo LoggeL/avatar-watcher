@@ -1,13 +1,15 @@
-const { SlashCommandBuilder } = require('@discordjs/builders')
-
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('stats')
-    .setDescription('Get all stats for a user')
-    .setDescription('Info about a user')
-    .addUserOption((option) =>
-      option.setName('target').setDescription('The user')
-    ),
+  data: {
+    name: 'stats',
+    description: 'Get all stats for a user',
+    options: [
+      {
+        type: 6,
+        name: 'target',
+        description: 'Info about a user',
+      },
+    ],
+  },
   execute: async (interaction) => {
     const user = interaction.options.getUser('target')
       ? interaction.options.getUser('target')
