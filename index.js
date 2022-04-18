@@ -67,14 +67,26 @@ client.on('userUpdate', async (oldUser, newUser) => {
   console.log('UserUpdate', newUser.tag);
 
   const newAvatar = oldUser.avatarURL({ dynamic: true });
-  const oldAvatar = newUser.avatarURL({ dynamic: true });
+  if (!newAvatar) return;
 
-  if (newAvatar !== oldAvatar) {
+  const oldAvatarEntry = await knex('avatar')
+    .select('url')
+    .where({
+      user_id: newUser.id,
+      type: 'avatar',
+      changed_at: Date.now(),
+    })
+    .first();
+
+  const oldAvatar = oldAvatarEntry ? oldAvatarEntry.url : null;
+
+
+  if (!oldAvatar || newAvatar !== oldAvatar) {
     // Upload the avatar to the webhook
     const msg = await webhookClient.send({
       username: `${newUser.tag} - New Avatar`,
       avatarURL: newUser.avatarURL({ format: 'png' }),
-      content: `[<t:${Math.round(Date.now()/1000)}:R>] \`${newUser.tag}\` has changed their avatar!`,
+      content: `[<t:${Math.round(Date.now() / 1000)}:R>] \`${newUser.tag}\` has changed their avatar!`,
       files: [newUser.avatarURL({ dynamic: true })],
     });
     // Get the URL of the attachment
@@ -114,6 +126,9 @@ client.on('userUpdate', async (oldUser, newUser) => {
   if (!oldBanner && newBanner !== oldBanner) {
     // Upload the avatar to the webhook
     const msg = await webhookClient.send({
+      username: `${newUser.tag} - New Avatar`,
+      avatarURL: newUser.bannerURL({ format: 'png' }),
+      content: `[<t:${Math.round(Date.now() / 1000)}:R>] \`${newUser.tag}\` has changed their banner!`,
       files: [newUser.bannerURL({ dynamic: true })],
     });
     // Get the URL of the attachment
@@ -134,15 +149,29 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
   console.log('guildMemberUpdate', newMember.user.tag);
 
   const newAvatar = newMember.avatarURL({ dynamic: true });
-  const oldAvatar = oldMember.avatarURL({ dynamic: true });
-
   if (!newAvatar) return;
 
-  if (newAvatar !== oldAvatar) {
+  const oldAvatarEntry = await knex('avatar')
+    .select('url')
+    .where({
+      user_id: newMember.user.id,
+      type: 'guildAvatar',
+      changed_at: Date.now(),
+    })
+    .first();
+
+  const oldAvatar = oldAvatarEntry ? oldAvatarEntry.url : null;
+
+
+  if (!oldAvatar || newAvatar !== oldAvatar) {
     // Upload the avatar to the webhook
     const msg = await webhookClient.send({
+      username: `${newMember.user.tag} - New Avatar`,
+      avatarURL: newMember.avatarURL({ format: 'png' }),
+      content: `[<t:${Math.round(Date.now() / 1000)}:R>] \`${newUser.tag}\` has changed their guild avatar!`,
       files: [newMember.avatarURL({ dynamic: true })],
     });
+
     // Get the URL of the attachment
     const attachment = msg.attachments[0];
     const url = attachment.url;
