@@ -14,7 +14,8 @@ module.exports = {
         }]
     },
     execute: async (interaction) => {
-        const user = interaction.options.getUser('target') ? interaction.options.getUser('target') : interaction.user
+        const user = interaction.options.getUser('target') || interaction.user
+        const hidden = interaction.options.getBoolean('hidden')
         console.log('Execute', user.tag)
         const knex = interaction.knex
         const last = await knex('avatar').select('url', 'changed_at').where({
@@ -22,7 +23,7 @@ module.exports = {
         }).orderBy('id', 'desc').first()
         if (!last) return await interaction.reply({
             content: "This user didn't change his avatar recently",
-            ephemeral: true,
+            ephemeral: hidden,
         })
         const stats = await knex('avatar').select('type', 'type').where({
             user_id: user.id
@@ -32,7 +33,7 @@ module.exports = {
       )}:R>`
         await interaction.reply({
             content: output,
-            ephemeral: interaction.options.getBoolean('hidden')
+            ephemeral: hidden
         })
     },
 }
