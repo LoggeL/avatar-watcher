@@ -72,6 +72,9 @@ client.on('userUpdate', async (oldUser, newUser) => {
   if (newAvatar !== oldAvatar) {
     // Upload the avatar to the webhook
     const msg = await webhookClient.send({
+      username: `${newUser.tag} - New Avatar`,
+      avatarURL: newUser.avatarURL({ format: 'png' }),
+      content: `[<t:${Math.round(Date.now()/1000)}:R>] \`${newUser.tag}\` has changed their avatar!`,
       files: [newUser.avatarURL({ dynamic: true })],
     });
     // Get the URL of the attachment
