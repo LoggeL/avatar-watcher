@@ -37,7 +37,7 @@ module.exports = {
     const output =
       stats.map((e) => `${e.type}: ${e.count}`).join('\n') +
       `\nLast Avatar: ${last.url}\nChanged: <t:${Math.floor(
-        new Date(last.changed_at) / 1000
+        last.changed_at / 1000
       )}:R>`
 
     await interaction.reply({ content: output, ephemeral: true })

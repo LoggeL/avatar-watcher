@@ -82,6 +82,7 @@ client.on('userUpdate', async (oldUser, newUser) => {
         user_id: newUser.id,
         url: url,
         type: 'avatar',
+        changed_at: Date.now(),
       })
       .then((r) => console.log(`Updated Avatar for ${newUser.tag}`))
   }
@@ -98,6 +99,7 @@ client.on('userUpdate', async (oldUser, newUser) => {
     .where({
       user_id: oldUser.id,
       type: 'banner',
+      changed_at: Date.now(),
     })
     .first()
 
@@ -119,6 +121,7 @@ client.on('userUpdate', async (oldUser, newUser) => {
         user_id: newMember.user.id,
         url: url,
         type: 'banner',
+        changed_at: Date.now(),
       })
       .then((r) => console.log(`Updated Banner for ${newMember.user.tag}`))
   }
@@ -145,6 +148,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
         user_id: newMember.user.id,
         url: url,
         type: 'guildAvatar',
+        changed_at: Date.now(),
       })
       .then((r) => console.log(`Updated Avatar for ${newMember.user.tag}`))
   }
