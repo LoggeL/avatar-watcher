@@ -1,6 +1,7 @@
 # Config
 config.json
 data.sqlite
+test.js
 
 # Logs
 logs

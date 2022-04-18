@@ -20,46 +20,40 @@ const webhookClient = new Discord.WebhookClient({
   url: storageWebhook,
 })
 
-client.on('guildMemberUpdate', async (oldMember, newMember) => {
-  console.log(oldMember.user.tag)
+client.on('userUpdate', async (oldUser, newUser) => {
+  console.log('UserUpdate', newUser.tag)
 
-  const newAvatar = newMember.user.avatarURL({ dynamic: true })
-  const oldAvatar = oldMember.user.avatarURL({ dynamic: true })
+  const newAvatar = oldUser.avatarURL({ dynamic: true })
+  const oldAvatar = newUser.avatarURL({ dynamic: true })
 
   if (newAvatar !== oldAvatar) {
     // Upload the avatar to the webhook
     const msg = await webhookClient.send({
-      files: [newMember.user.avatarURL({ dynamic: true })],
+      files: [newUser.avatarURL({ dynamic: true })],
     })
     // Get the URL of the attachment
     const attachment = msg.attachments[0]
     const url = attachment.url
     knex('avatar')
       .insert({
-        user_id: newMember.user.id,
+        user_id: newUser.id,
         url: url,
         type: 'avatar',
       })
-      .then((r) => console.log(`Updated Avatar for ${newMember.user.tag}`))
+      .then((r) => console.log(`Updated Avatar for ${newUser.tag}`))
   }
 
   // Fetch user for banner
-  await newMember.user.fetch()
+  await newUser.fetch()
+  await oldUser.fetch()
 
-  const newBanner = newMember.user.bannerURL({ dynamic: true })
+  const newBanner = newUser.bannerURL({ dynamic: true })
+  const oldBanner = oldUser.avatarURL({ dynamic: true })
 
   // Return if user has no banner
   if (!newBanner) return
 
-  const oldBanner = await knex('avatar')
-    .select('url')
-    .where({
-      user_id: oldMember.user.id,
-      type: 'banner',
-    })
-    .first()
-
-  if (!oldBanner || newBanner !== oldBanner) {
+  if (newBanner !== oldBanner) {
     // Upload the avatar to the webhook
     const msg = await webhookClient.send({
       files: [newMember.user.bannerURL({ dynamic: true })],
@@ -74,6 +68,30 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
         type: 'banner',
       })
       .then((r) => console.log(`Updated Banner for ${newMember.user.tag}`))
+  }
+})
+
+client.on('guildMemberUpdate', async (oldMember, newMember) => {
+  console.log('guildMemberUpdate', newMember.user.tag)
+
+  const newAvatar = newMember.avatarURL({ dynamic: true })
+  const oldAvatar = oldMember.avatarURL({ dynamic: true })
+
+  if (newAvatar !== oldAvatar) {
+    // Upload the avatar to the webhook
+    const msg = await webhookClient.send({
+      files: [newMember.avatarURL({ dynamic: true })],
+    })
+    // Get the URL of the attachment
+    const attachment = msg.attachments[0]
+    const url = attachment.url
+    knex('avatar')
+      .insert({
+        user_id: newMember.user.id,
+        url: url,
+        type: 'guildAvatar',
+      })
+      .then((r) => console.log(`Updated Avatar for ${newMember.user.tag}`))
   }
 })
 
