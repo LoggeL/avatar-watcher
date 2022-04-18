@@ -1,5 +1,4 @@
 const Discord = require('discord.js')
-const { $fetch } = require('ohmyfetch')
 const knex = require('knex')({
   client: 'sqlite3', // or 'better-sqlite3'
   connection: {
