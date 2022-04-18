@@ -3,6 +3,8 @@
     "@discordjs/rest": "^0.4.1",
     "@vscode/sqlite3": "^5.0.8",
     "discord.js": "^13.6.0",
-    "knex": "^1.0.7"
+    "knex": "^1.0.7",
+    "eslint": "^8.13.0",
+    "prettier": "2.6.2"
   }
 }
