@@ -10,6 +10,10 @@ module.exports = {
             "type": 6,
             "name": "target",
             "description": "Info about a user"
+        }, {
+            "type": 5,
+            "name": "hidden",
+            "description": "Do you wish to see the output as an ephemeral message?"
         }]
     },
     execute: async (interaction) => {
@@ -31,7 +35,7 @@ module.exports = {
       )}:R>`
         await interaction.reply({
             content: output,
-            ephemeral: true
+            ephemeral: interaction.options.getBoolean('hidden')
         })
     },
 }
