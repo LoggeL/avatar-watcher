@@ -1,34 +1,34 @@
-const { REST } = require('@discordjs/rest')
-const { Routes } = require('discord-api-types/v9')
-const { token } = require('./config.json')
-const fs = require('node:fs')
+const { REST } = require('@discordjs/rest');
+const { Routes } = require('discord-api-types/v9');
+const { token } = require('./config.json');
+const fs = require('node:fs');
 
-const commands = []
+const commands = [];
 const commandFiles = fs
   .readdirSync('./commands')
-  .filter((file) => file.endsWith('.js'))
+  .filter((file) => file.endsWith('.js'));
 
 // Place your client and guild ids here
-const clientId = '365925148601090048'
-const guildId = '412986571944361984'
+const clientId = '365925148601090048';
+const guildId = '412986571944361984';
 
 for (const file of commandFiles) {
-  const command = require(`./commands/${file}`)
-  commands.push(command.data)
+  const command = require(`./commands/${file}`);
+  commands.push(command.data);
 }
 
-const rest = new REST({ version: '9' }).setToken(token)
+const rest = new REST({ version: '9' }).setToken(token);
 
-;(async () => {
+(async () => {
   try {
-    console.log('Started refreshing application (/) commands.')
+    console.log('Started refreshing application (/) commands.');
 
     await rest.put(Routes.applicationGuildCommands(clientId, guildId), {
       body: commands,
-    })
+    });
 
-    console.log('Successfully reloaded application (/) commands.')
+    console.log('Successfully reloaded application (/) commands.');
   } catch (error) {
-    console.error(error)
+    console.error(error);
   }
-})()
+})();

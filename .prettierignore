@@ -1,0 +1,5 @@
+# ignore build
+dist/*
+# ignore modules
+./node_modules/*
+*.example
