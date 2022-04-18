@@ -45,15 +45,23 @@ client.on('userUpdate', async (oldUser, newUser) => {
 
   // Fetch user for banner
   await newUser.fetch()
-  await oldUser.fetch()
 
   const newBanner = newUser.bannerURL({ dynamic: true })
-  const oldBanner = oldUser.avatarURL({ dynamic: true })
+
+  const oldBannerEntry = await knex('avatar')
+    .select('url')
+    .where({
+      user_id: oldMember.user.id,
+      type: 'banner',
+    })
+    .first()
+
+  const oldBanner = oldBannerEntry ? oldBannerEntry.url : null
 
   // Return if user has no banner
   if (!newBanner) return
 
-  if (newBanner !== oldBanner) {
+  if (!oldBanner && newBanner !== oldBanner) {
     // Upload the avatar to the webhook
     const msg = await webhookClient.send({
       files: [newMember.user.bannerURL({ dynamic: true })],
