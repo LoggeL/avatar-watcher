@@ -1,4 +1,5 @@
-const Discord = require('discord.js')
+const { Client, Collection, Intents, WebhookClient } = require('discord.js')
+const fs = require('node:fs')
 const knex = require('knex')({
   client: 'sqlite3', // or 'better-sqlite3'
   connection: {
@@ -7,16 +8,47 @@ const knex = require('knex')({
   useNullAsDefault: true,
 })
 
-const intents = new Discord.Intents(['GUILD_MEMBERS'])
-const client = new Discord.Client({ intents })
+const intents = new Intents(['GUILD_MEMBERS'])
+const client = new Client({ intents })
 
 const { token, storageWebhook } = require('./config.json')
+
+client.commands = new Collection()
+const commandFiles = fs
+  .readdirSync('./commands')
+  .filter((file) => file.endsWith('.js'))
+
+for (const file of commandFiles) {
+  const command = require(`./commands/${file}`)
+  if (command.data) client.commands.set(command.data.name, command)
+}
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`)
 })
 
-const webhookClient = new Discord.WebhookClient({
+client.on('interactionCreate', async (interaction) => {
+  // Attach DB to object
+  interaction.knex = knex
+
+  if (!interaction.isCommand()) return
+  const command = client.commands.get(interaction.commandName)
+
+  if (!command) return
+
+  try {
+    await command.execute(interaction)
+  } catch (error) {
+    console.error(error)
+    if (interaction.isCommand())
+      await interaction.reply({
+        content: 'There was an error while executing this command!',
+        ephemeral: true,
+      })
+  }
+})
+
+const webhookClient = new WebhookClient({
   url: storageWebhook,
 })
 
@@ -51,7 +83,7 @@ client.on('userUpdate', async (oldUser, newUser) => {
   const oldBannerEntry = await knex('avatar')
     .select('url')
     .where({
-      user_id: oldMember.user.id,
+      user_id: oldUser.id,
       type: 'banner',
     })
     .first()
@@ -84,6 +116,8 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
 
   const newAvatar = newMember.avatarURL({ dynamic: true })
   const oldAvatar = oldMember.avatarURL({ dynamic: true })
+
+  if (!newAvatar) return
 
   if (newAvatar !== oldAvatar) {
     // Upload the avatar to the webhook
