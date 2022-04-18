@@ -22,13 +22,17 @@ module.exports = {
       .where({ user_id: user.id })
       .count('type as count')
 
+    if (stats.lenght === 0)
+      return await interaction.reply({
+        content: "This user didn't change his avatar recently",
+        ephemeral: true,
+      })
+
     const last = await knex('avatar')
       .select('url', 'changed_at')
       .where({ user_id: user.id })
       .orderBy('id', 'desc')
       .first()
-
-    console.log(last)
 
     const output =
       stats.map((e) => `${e.type}: ${e.count}`).join('\n') +
