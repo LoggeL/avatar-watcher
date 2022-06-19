@@ -86,7 +86,7 @@ client.on('userUpdate', async (oldUser, newUser) => {
     const msg = await webhookClient.send({
       username: `${newUser.tag} - New Avatar`,
       avatarURL: newUser.avatarURL({ format: 'png' }),
-      content: `[<t:${Math.round(Date.now() / 1000)}:R>] \`${newUser.tag}\` has changed their avatar!`,
+      content: `[<t:${Math.round(Date.now() / 1000) - 20}:R>] \`${newUser.tag}\` has changed their avatar!`,
       files: [newUser.avatarURL({ dynamic: true })],
     });
     // Get the URL of the attachment
@@ -123,7 +123,7 @@ client.on('userUpdate', async (oldUser, newUser) => {
   // Return if user has no banner
   if (!newBanner) return;
 
-  if (!oldBanner && newBanner !== oldBanner) {
+  if (!oldBanner && newBanner !== oldBanner && oldUser.banner !== newUser.banner) {
     // Upload the avatar to the webhook
     const msg = await webhookClient.send({
       username: `${newUser.tag} - New Avatar`,
