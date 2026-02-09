@@ -1,15 +1,16 @@
-const { Client, Collection, Intents, WebhookClient } = require('discord.js');
+const { Client, Collection, GatewayIntentBits, WebhookClient } = require('discord.js');
 const fs = require('node:fs');
 const knex = require('knex')({
-  client: 'sqlite3', // or 'better-sqlite3'
+  client: 'better-sqlite3',
   connection: {
     filename: './data.sqlite',
   },
   useNullAsDefault: true,
 });
 
-const intents = new Intents(['GUILD_MEMBERS']);
-const client = new Client({ intents });
+const client = new Client({
+  intents: [GatewayIntentBits.GuildMembers],
+});
 
 const { token, storageWebhook } = require('./config.json');
 
@@ -42,7 +43,7 @@ client.on('interactionCreate', async (interaction) => {
   // Attach DB to object
   interaction.knex = knex;
 
-  if (!interaction.isCommand()) return;
+  if (!interaction.isChatInputCommand()) return;
   const command = client.commands.get(interaction.commandName);
 
   if (!command) return;
@@ -51,7 +52,7 @@ client.on('interactionCreate', async (interaction) => {
     await command.execute(interaction);
   } catch (error) {
     console.error(error);
-    if (interaction.isCommand())
+    if (interaction.isChatInputCommand())
       await interaction.reply({
         content: 'There was an error while executing this command!',
         ephemeral: true,
@@ -66,7 +67,7 @@ const webhookClient = new WebhookClient({
 client.on('userUpdate', async (oldUser, newUser) => {
   console.log('UserUpdate', newUser.tag);
 
-  const newAvatar = oldUser.avatarURL({ dynamic: true });
+  const newAvatar = oldUser.avatarURL();
   if (!newAvatar) return;
 
   const oldAvatarEntry = await knex('avatar')
@@ -85,12 +86,12 @@ client.on('userUpdate', async (oldUser, newUser) => {
     // Upload the avatar to the webhook
     const msg = await webhookClient.send({
       username: `${newUser.tag} - New Avatar`,
-      avatarURL: newUser.avatarURL({ format: 'png' }),
+      avatarURL: newUser.avatarURL({ extension: 'png' }),
       content: `[<t:${Math.round(Date.now() / 1000) - 20}:R>] \`${newUser.tag}\` has changed their avatar!`,
-      files: [newUser.avatarURL({ dynamic: true })],
+      files: [newUser.avatarURL()],
     });
     // Get the URL of the attachment
-    const attachment = msg.attachments[0];
+    const attachment = msg.attachments.first();
     const url = attachment.url;
     knex('avatar')
       .insert({
@@ -105,7 +106,7 @@ client.on('userUpdate', async (oldUser, newUser) => {
   // Fetch user for banner
   await newUser.fetch();
 
-  const newBanner = newUser.bannerURL({ dynamic: true });
+  const newBanner = newUser.bannerURL();
 
   await knex.schema.hasTable('avatar');
 
@@ -126,13 +127,13 @@ client.on('userUpdate', async (oldUser, newUser) => {
   if (!oldBanner && newBanner !== oldBanner && oldUser.banner !== newUser.banner) {
     // Upload the avatar to the webhook
     const msg = await webhookClient.send({
-      username: `${newUser.tag} - New Avatar`,
-      avatarURL: newUser.bannerURL({ format: 'png' }),
+      username: `${newUser.tag} - New Banner`,
+      avatarURL: newUser.bannerURL({ extension: 'png' }),
       content: `[<t:${Math.round(Date.now() / 1000)}:R>] \`${newUser.tag}\` has changed their banner!`,
-      files: [newUser.bannerURL({ dynamic: true })],
+      files: [newUser.bannerURL()],
     });
     // Get the URL of the attachment
-    const attachment = msg.attachments[0];
+    const attachment = msg.attachments.first();
     const url = attachment.url;
     knex('avatar')
       .insert({
@@ -148,7 +149,7 @@ client.on('userUpdate', async (oldUser, newUser) => {
 client.on('guildMemberUpdate', async (oldMember, newMember) => {
   console.log('guildMemberUpdate', newMember.user.tag);
 
-  const newAvatar = newMember.avatarURL({ dynamic: true });
+  const newAvatar = newMember.avatarURL();
   if (!newAvatar) return;
 
   const oldAvatarEntry = await knex('avatar')
@@ -167,13 +168,13 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
     // Upload the avatar to the webhook
     const msg = await webhookClient.send({
       username: `${newMember.user.tag} - New Avatar`,
-      avatarURL: newMember.avatarURL({ format: 'png' }),
-      content: `[<t:${Math.round(Date.now() / 1000)}:R>] \`${newUser.tag}\` has changed their guild avatar!`,
-      files: [newMember.avatarURL({ dynamic: true })],
+      avatarURL: newMember.avatarURL({ extension: 'png' }),
+      content: `[<t:${Math.round(Date.now() / 1000)}:R>] \`${newMember.user.tag}\` has changed their guild avatar!`,
+      files: [newMember.avatarURL()],
     });
 
     // Get the URL of the attachment
-    const attachment = msg.attachments[0];
+    const attachment = msg.attachments.first();
     const url = attachment.url;
     knex('avatar')
       .insert({

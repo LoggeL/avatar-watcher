@@ -1,9 +1,8 @@
 {
   "dependencies": {
-    "@discordjs/rest": "^0.4.1",
-    "@vscode/sqlite3": "^5.0.8",
-    "discord.js": "^13.6.0",
-    "knex": "^1.0.7",
+    "better-sqlite3": "^11.8.1",
+    "discord.js": "^14.18.0",
+    "knex": "^3.1.0",
     "eslint": "^8.13.0",
     "prettier": "2.6.2"
   }
