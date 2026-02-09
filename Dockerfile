@@ -9,4 +9,8 @@ RUN npm ci
 
 COPY . .
 
+# data.sqlite persists via bind mount at /app/data/
+# Symlink so the bot finds it at ./data.sqlite
+RUN rm -f data.sqlite && ln -s /app/data/data.sqlite data.sqlite
+
 CMD ["node", "index.js"]
