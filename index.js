@@ -13,7 +13,8 @@ const createGuildMemberUpdateHandler =
 const createInteractionHandler =
   require('./src/handlers/interactionCreate');
 
-const { token, storageWebhook } = require('./config.json');
+const token = process.env.DISCORD_TOKEN;
+const storageWebhook = process.env.STORAGE_WEBHOOK;
 
 // --- Client setup ---
 const client = new Client({
